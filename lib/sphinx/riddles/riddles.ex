@@ -38,6 +38,11 @@ defmodule Sphinx.Riddles do
 
   def get(_), do: nil
 
+  @spec get_by_permalink(String.t()) :: Riddle.t() | nil
+  def get_by_permalink(permalink) do
+    Repo.get_by(Riddle, permalink: permalink)
+  end
+
   @spec delete(map()) :: {:ok, Riddle.t()} | {:error, :not_found} | {:error, Ecto.Changeset.t()}
   def delete(params) when is_map(params) do
     case get(params) do
@@ -53,9 +58,10 @@ defmodule Sphinx.Riddles do
   def update(params) when is_map(params) do
     Riddle
     |> Repo.get(params.id)
-    |> case  do
+    |> case do
       nil ->
         {:error, :not_found}
+
       riddle ->
         riddle
         |> Riddle.changeset(params)
