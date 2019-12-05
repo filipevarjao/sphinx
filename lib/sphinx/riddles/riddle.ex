@@ -7,12 +7,17 @@ defmodule Sphinx.Riddles.Riddle do
   import Ecto.Changeset
 
   @timestamps_opts [type: :utc_datetime, inserted_at: :created_at]
-  @required [:permalink]
-  @fields [:keywords] ++ @required
+  @required [:permalink, :enquirer]
+  @fields [:title, :keywords, :permalink_answer, :upvote, :enquirer, :solver] ++ @required
 
   schema "riddles" do
+    field(:title, :string)
     field(:permalink, :string)
     field(:keywords, {:array, :string})
+    field(:permalink_answer, :string)
+    field(:upvote, :integer)
+    field(:enquirer, :string)
+    field(:solver, :string)
 
     timestamps()
   end
