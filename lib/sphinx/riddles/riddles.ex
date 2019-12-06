@@ -1,10 +1,11 @@
-defmodule Sphinx.Riddles.Riddles do
+defmodule Sphinx.Riddles do
   @moduledoc """
   Riddles
   """
 
   alias Sphinx.Riddles.Riddle
   alias Sphinx.Repo
+  alias Sphinx.Utils.Query
 
   require Logger
 
@@ -13,5 +14,52 @@ defmodule Sphinx.Riddles.Riddles do
     %Riddle{}
     |> Riddle.changeset(params)
     |> Repo.insert()
+  end
+
+  @spec list(map()) :: Scrivener.Page.t()
+  def list(params) when is_map(params) do
+    Riddle
+    |> Query.q(params, [
+      :id,
+      :title,
+      :permalink,
+      :keywords,
+      :upvote,
+      :enquirer,
+      :solver
+    ])
+    |> Repo.paginate(params)
+  end
+
+  @spec get(map()) :: Riddle.t() | nil
+  def get(%{id: id, title: title} = params) when is_map(params) do
+    Repo.get_by(Riddle, id: id, title: title)
+  end
+
+  def get(_), do: nil
+
+  @spec delete(map()) :: {:ok, Riddle.t()} | {:error, :not_found} | {:error, Ecto.Changeset.t()}
+  def delete(params) when is_map(params) do
+    case get(params) do
+      nil ->
+        {:error, :not_found}
+
+      riddle ->
+        Repo.delete(riddle)
+    end
+  end
+
+  @spec update(map()) :: {:ok, Riddle.t()} | {:error, Ecto.Changeset.t()} | {:error, :not_found}
+  def update(params) when is_map(params) do
+    Riddle
+    |> Repo.get(params.id)
+    |> case  do
+      nil ->
+        {:error, :not_found}
+      riddle ->
+        riddle
+        |> Riddle.changeset(params)
+        |> Repo.update()
+    end
   end
 end
