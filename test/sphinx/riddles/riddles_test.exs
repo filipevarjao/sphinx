@@ -18,7 +18,7 @@ defmodule Sphinx.RiddlesTest do
 
     test "works with correct params" do
       assert [] == Repo.all(Riddle)
-      assert {:ok, riddle} = Riddles.create(@params)
+      assert {:ok, riddle} = Riddles.Riddles.create(@params)
       assert [riddle] == Repo.all(Riddle)
     end
   end
