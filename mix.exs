@@ -8,6 +8,7 @@ defmodule Sphinx.MixProject do
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
+      elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
 
       # Testing
@@ -25,7 +26,8 @@ defmodule Sphinx.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Sphinx.Application, []}
     ]
   end
 
@@ -50,4 +52,8 @@ defmodule Sphinx.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate", "test --no-start"]
     ]
   end
+
+  defp elixirc_paths(:test), do: elixirc_paths() ++ ["test/support"]
+  defp elixirc_paths(_), do: elixirc_paths()
+  defp elixirc_paths(), do: ["lib"]
 end

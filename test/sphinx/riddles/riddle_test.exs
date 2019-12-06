@@ -75,7 +75,7 @@ defmodule Sphinx.Riddles.RiddleTest do
       refute changeset.valid?
 
       assert changeset.errors == [
-        permalink_answer: {"is invalid", [type: :string, validation: :cast]}
+               permalink_answer: {"is invalid", [type: :string, validation: :cast]}
              ]
     end
   end
