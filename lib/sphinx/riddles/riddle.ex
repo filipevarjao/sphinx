@@ -6,7 +6,7 @@ defmodule Sphinx.Riddles.Riddle do
 
   import Ecto.Changeset
 
-  @timestamps_opts [type: :utc_datetime, inserted_at: :created_at]
+  @timestamps_opts [type: :utc_datetime]
   @required [:permalink, :enquirer]
   @fields [:title, :keywords, :permalink_answer, :upvote, :enquirer, :solver] ++ @required
 
