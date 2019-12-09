@@ -1,14 +1,32 @@
 defmodule SphinxRtm do
   use Slack
 
-  def handle_connect(slack, state) do
+  alias Sphinx.Messages
+
+  def handle_connect(slack, _state) do
     IO.puts("Connected as #{slack.me.name}")
+    {:ok, :waiting}
+  end
+
+  def handle_event(%{type: "message", subtype: "message_replied"}, _slack, _state) do
+    {:ok, :reply}
+  end
+
+  # Ignore event with subtype (delete, change...)
+  def handle_event(%{type: "message", subtype: _some_event}, _slack, state) do
     {:ok, state}
   end
 
-  def handle_event(message = %{type: "message"}, slack, state) do
-    send_message("I got a message!", message.channel, slack)
-    {:ok, state}
+  def handle_event(message = %{type: "message"}, _slack, state) do
+    case state do
+      :waiting ->
+        Messages.process({:question, message})
+
+      :reply ->
+        Messages.process({:reply, message})
+    end
+
+    {:ok, :waiting}
   end
 
   def handle_event(_, _, state), do: {:ok, state}
