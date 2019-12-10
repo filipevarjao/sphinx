@@ -30,23 +30,11 @@ defmodule SphinxRtm.Messages do
 
   @spec process_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
   defp process_reply(message) do
-    id =
-      permalink(message.channel, message.thread_ts)
-      |> get_riddle_id()
-
     %{}
     |> Map.put(:solver, user(message.user))
     |> Map.put(:permalink_answer, permalink(message.channel, message.ts))
-    |> Map.put(:id, id)
+    |> Map.put(:permalink, permalink(message.channel, message.thread_ts))
     |> Riddles.update()
-  end
-
-  @spec get_riddle_id(String.t()) :: integer()
-  defp get_riddle_id(permalink) do
-    permalink
-    |> String.replace(~r/[?](.)*/, "")
-    |> Riddles.get_by_permalink()
-    |> Map.get(:id)
   end
 
   defp user(user_id), do: SlackUtils.get_user_name(user_id)
