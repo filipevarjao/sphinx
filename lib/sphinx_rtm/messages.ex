@@ -1,7 +1,5 @@
 defmodule SphinxRtm.Messages do
-  use Slack
-  alias Slack.Web.Chat
-  alias Slack.Web.Users
+  alias Sphinx.SlackUtils
   alias Sphinx.Riddles
 
   ## TODO: check if message is a question
@@ -24,36 +22,23 @@ defmodule SphinxRtm.Messages do
   @spec process_question(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
   defp process_question(message) do
     %{}
-    |> Map.put(:enquirer, get_user_name(message.user))
+    |> Map.put(:enquirer, user(message.user))
     |> Map.put(:title, message.text)
-    |> Map.put(:permalink, get_permalink(message.channel, message.ts))
+    |> Map.put(:permalink, permalink(message.channel, message.ts))
     |> Riddles.create()
   end
 
   @spec process_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
   defp process_reply(message) do
     id =
-      get_permalink(message.channel, message.thread_ts)
+      permalink(message.channel, message.thread_ts)
       |> get_riddle_id()
 
     %{}
-    |> Map.put(:solver, get_user_name(message.user))
-    |> Map.put(:permalink_answer, get_permalink(message.channel, message.ts))
+    |> Map.put(:solver, user(message.user))
+    |> Map.put(:permalink_answer, permalink(message.channel, message.ts))
     |> Map.put(:id, id)
     |> Riddles.update()
-  end
-
-  @spec get_permalink(String.t(), String.t()) :: String.t()
-  defp get_permalink(channel, ts) do
-    Chat.get_permalink(channel, ts)
-    |> Map.get("permalink")
-  end
-
-  @spec get_user_name(String.t()) :: String.t()
-  defp get_user_name(user) do
-    user
-    |> Users.info()
-    |> get_in(["user", "name"])
   end
 
   @spec get_riddle_id(String.t()) :: integer()
@@ -63,4 +48,7 @@ defmodule SphinxRtm.Messages do
     |> Riddles.get_by_permalink()
     |> Map.get(:id)
   end
+
+  defp user(user_id), do: SlackUtils.get_user_name(user_id)
+  defp permalink(channel_id, ts), do: SlackUtils.get_permalink(channel_id, ts)
 end
