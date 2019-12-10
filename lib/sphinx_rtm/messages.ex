@@ -14,8 +14,9 @@ defmodule SphinxRtm.Messages do
     case Map.has_key?(message, :thread_ts) do
       true ->
         process_reply(message)
+
       false ->
-        #TODO: check if @sphinx is invoked
+        # TODO: check if @sphinx is invoked
         process_question(message)
     end
   end
@@ -31,7 +32,6 @@ defmodule SphinxRtm.Messages do
 
   @spec process_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
   defp process_reply(message) do
-
     id =
       get_permalink(message.channel, message.thread_ts)
       |> get_riddle_id()
