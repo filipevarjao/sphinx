@@ -8,6 +8,6 @@ config :sphinx, Sphinx.Repo,
   hostname: "localhost",
   username: "postgres",
   password: "postgres",
-  database: "sphinx",
+  database: "sphinx_test",
   port: "5432",
   pool: Ecto.Adapters.SQL.Sandbox
