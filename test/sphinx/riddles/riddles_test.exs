@@ -123,8 +123,7 @@ defmodule Sphinx.RiddlesTest do
       {:ok, riddle} = Riddles.create(@params)
       assert riddle
 
-      params =
-        %{@params | title: "title_II"}
+      params = %{@params | title: "title_II"}
 
       assert {:ok, updated} = Riddles.update(params)
       assert riddle.id == updated.id
