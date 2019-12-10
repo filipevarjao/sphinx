@@ -26,7 +26,7 @@ defmodule SphinxRtm.MessagesTest do
       {Slack.Web.Users, [], [info: fn "ABC" -> @user_a end]},
       {Slack.Web.Chat, [], [get_permalink: fn "XYZ", "123.456" -> @question_permalink end]}
     ]) do
-      {:ok, riddle} = Messages.process(@question)
+      assert {:ok, riddle} = Messages.process(@question)
       assert riddle.enquirer == get_user(@user_a)
       assert riddle.permalink == get_permalink(@question_permalink)
       assert riddle.title == @question.text
@@ -50,8 +50,8 @@ defmodule SphinxRtm.MessagesTest do
          end
        ]}
     ]) do
-      {:ok, _} = Messages.process(@question)
-      {:ok, riddle} = Messages.process(@answer)
+      assert {:ok, _} = Messages.process(@question)
+      assert {:ok, riddle} = Messages.process(@answer)
       assert riddle.enquirer == get_user(@user_a)
       assert riddle.solver == get_user(@user_b)
       assert riddle.permalink_answer == get_permalink(@answer_permalink)
