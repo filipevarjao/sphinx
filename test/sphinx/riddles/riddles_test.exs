@@ -119,6 +119,18 @@ defmodule Sphinx.RiddlesTest do
       assert updated.title == "title_II"
     end
 
+    test "updating a riddle by permalink" do
+      {:ok, riddle} = Riddles.create(@params)
+      assert riddle
+
+      params =
+        %{@params | title: "title_II"}
+
+      assert {:ok, updated} = Riddles.update(params)
+      assert riddle.id == updated.id
+      assert updated.title == "title_II"
+    end
+
     test "do not update with wrong params" do
       {:ok, riddle} = Riddles.create(@params)
       assert riddle
