@@ -42,7 +42,8 @@ defmodule Sphinx.MixProject do
       {:plug_cowboy, "~> 2.1"},
       # Test
       {:excoveralls, "~> 0.9", only: :test},
-      {:mock, "~> 0.3.0", only: :test}
+      {:mock, "~> 0.3.0", only: :test},
+      {:poison, "~> 3.0"}
     ]
   end
 
