@@ -16,6 +16,7 @@ defmodule SphinxRtm do
   end
 
   def handle_event(message = %{type: "message"}, slack, state) do
+    Logger.info("Processing message from #{message.user}")
     case Messages.process(message) do
       {:reply, text} ->
         send_message(text, message.channel, slack)
@@ -29,7 +30,7 @@ defmodule SphinxRtm do
   def handle_event(_, _, state), do: {:ok, state}
 
   def handle_info({:message, text, channel}, slack, state) do
-    Logger.info("Sending the message")
+    Logger.info("Sending the message to #{channel}")
 
     send_message(text, channel, slack)
 
