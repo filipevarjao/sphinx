@@ -5,8 +5,10 @@ defmodule SphinxRtm.MessagesTest do
   import Mock
 
   alias SphinxRtm.Messages
+  alias Sphinx.Repo
+  alias Sphinx.Riddles.Riddle
 
-  @question %{type: "message", channel: "XYZ", ts: "123.456", user: "ABC", text: "Hello"}
+  @question %{type: "message", channel: "XYZ", ts: "123.456", user: "ABC", text: "<@SPX> Hello"}
   @answer %{
     type: "message",
     channel: "XYZ",
@@ -17,44 +19,117 @@ defmodule SphinxRtm.MessagesTest do
   }
   @user_a %{"user" => %{"name" => "user_a", "id" => "ABC"}}
   @user_b %{"user" => %{"name" => "user_b", "id" => "DEF"}}
+  @sphinx %{"user" => %{"name" => "sphinx", "id" => "SPX"}}
 
   @question_permalink %{"permalink" => "https://fake_question_http"}
   @answer_permalink %{"permalink" => "https://fake_answer_http?thread_ts=fake_question_http"}
 
-  test "incoming question is processed" do
-    with_mocks([
-      {Slack.Web.Users, [], [info: fn "ABC" -> @user_a end]},
-      {Slack.Web.Chat, [], [get_permalink: fn "XYZ", "123.456" -> @question_permalink end]}
-    ]) do
-      assert {:ok, riddle} = Messages.process(@question)
-      assert riddle.enquirer == get_user(@user_a)
-      assert riddle.permalink == get_permalink(@question_permalink)
-      assert riddle.title == @question.text
+  describe "incoming question is" do
+    test "replied and save message when sphinx is mentioned" do
+      with_mocks([
+        {Slack.Web.Users, [],
+         [
+           info: fn
+             "ABC" -> @user_a
+             "SPX" -> @sphinx
+           end
+         ]},
+        {Slack.Web.Chat, [], [get_permalink: fn "XYZ", "123.456" -> @question_permalink end]}
+      ]) do
+        assert {:reply, _text} = Messages.process(@question)
+
+        [riddle] = Repo.all(Riddle)
+        assert riddle.enquirer == get_user(@user_a)
+        assert riddle.permalink == get_permalink(@question_permalink)
+        assert riddle.title == @question.text
+      end
+    end
+
+    test "dicarded when sphinx is not mentioned" do
+      question = Map.put(@question, :text, "Hello")
+
+      with_mock(Slack.Web.Users,[
+            info: fn
+            "ABC" -> @user_a
+             "SPX" -> @sphinx
+          end
+          ]) do
+        assert :no_reply = Messages.process(question)
+
+        [] = Repo.all(Riddle)
+      end
+    end
+
+    test "dicarded when someone else than sphinx mentioned" do
+      question = Map.put(@question, :text, "<@DEF> Hello")
+
+      with_mock(Slack.Web.Users, [
+            info: fn
+            "ABC" -> @user_a
+            "DEF" -> @user_b
+            "SPX" -> @sphinx
+          end
+          ]) do
+        assert :no_reply = Messages.process(question)
+
+        [] = Repo.all(Riddle)
+      end
     end
   end
 
-  test "incoming reply is processed" do
-    with_mocks([
-      {Slack.Web.Users, [],
-       [
-         info: fn
+  describe "incoming reply is" do
+    test "saved when thread is saved" do
+      with_mocks([
+        {Slack.Web.Users, [],
+         [
+           info: fn
            "ABC" -> @user_a
            "DEF" -> @user_b
+           "SPX" -> @sphinx
          end
-       ]},
-      {Slack.Web.Chat, [],
-       [
-         get_permalink: fn
+         ]},
+        {Slack.Web.Chat, [],
+         [
+           get_permalink: fn
            "XYZ", "123.456" -> @question_permalink
            "XYZ", "124.456" -> @answer_permalink
          end
-       ]}
-    ]) do
-      assert {:ok, _} = Messages.process(@question)
-      assert {:ok, riddle} = Messages.process(@answer)
-      assert riddle.enquirer == get_user(@user_a)
-      assert riddle.solver == get_user(@user_b)
-      assert riddle.permalink_answer == get_permalink(@answer_permalink)
+         ]}
+      ]) do
+        assert {:reply, _} = Messages.process(@question)
+        assert :no_reply = Messages.process(@answer)
+
+        [riddle] = Repo.all(Riddle)
+        assert riddle.enquirer == get_user(@user_a)
+        assert riddle.solver == get_user(@user_b)
+        assert riddle.permalink_answer == get_permalink(@answer_permalink)
+      end
+    end
+    test "not saved when thread is not saved" do
+      question = Map.put(@question, :text, "Hello")
+      with_mocks([
+        {Slack.Web.Users, [],
+         [
+           info: fn
+           "ABC" -> @user_a
+           "DEF" -> @user_b
+           "SPX" -> @sphinx
+         end
+         ]},
+        {Slack.Web.Chat, [],
+         [
+           get_permalink: fn
+           "XYZ", "123.456" -> @question_permalink
+           "XYZ", "124.456" -> @answer_permalink
+         end
+         ]}
+      ]) do
+        assert :no_reply = Messages.process(question)
+        assert :no_reply = Messages.process(@answer)
+
+        [] = Repo.all(Riddle)
+
+      end
     end
   end
 

@@ -13,9 +13,15 @@ defmodule SphinxRtm do
     {:ok, state}
   end
 
-  def handle_event(message = %{type: "message"}, _slack, state) do
-    Messages.process(message)
-    {:ok, state}
+  def handle_event(message = %{type: "message"}, slack, state) do
+    case Messages.process(message) do
+      {:reply, text} ->
+        send_message(text, message.channel, slack)
+        {:ok, state}
+
+      :no_reply ->
+        {:ok, state}
+    end
   end
 
   def handle_event(_, _, state), do: {:ok, state}
