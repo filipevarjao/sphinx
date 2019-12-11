@@ -1,6 +1,7 @@
 defmodule SphinxRtm.Messages do
   alias Sphinx.SlackUtils
   alias Sphinx.Riddles
+  alias SphinxRtm.Messages.Parser
 
   ## TODO: check if message is a question
   ## if yes then get the keywords and search for old questions
@@ -12,10 +13,18 @@ defmodule SphinxRtm.Messages do
     case Map.has_key?(message, :thread_ts) do
       true ->
         process_reply(message)
+        :no_reply
 
       false ->
         # TODO: check if @sphinx is invoked
-        process_question(message)
+        case Parser.mention_sphinx?(message.text) do
+          true ->
+            process_question(message)
+            {:reply, "Are you asking for me?"}
+
+          false ->
+            :no_reply
+        end
     end
   end
 
