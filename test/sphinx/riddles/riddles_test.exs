@@ -1,5 +1,5 @@
 defmodule Sphinx.RiddlesTest do
-  use Sphinx.DataCase
+  use Sphinx.Support.DataCase
 
   alias Sphinx.Riddles
   alias Sphinx.Riddles.Riddle

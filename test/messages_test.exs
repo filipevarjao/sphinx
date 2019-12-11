@@ -1,6 +1,6 @@
 defmodule SphinxRtm.MessagesTest do
   use Slack
-  use Sphinx.DataCase
+  use Sphinx.Support.DataCase
 
   import Mock
 
