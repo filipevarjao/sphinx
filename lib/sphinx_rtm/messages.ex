@@ -3,6 +3,10 @@ defmodule SphinxRtm.Messages do
   alias Sphinx.Riddles
   alias SphinxRtm.Messages.Parser
 
+  @user_token Application.get_env(:slack, :user_token)
+  @slack_url "https://slack.com/api/"
+  @channel "CR1LTP79B"
+
   ## TODO: check if message is a question
   ## if yes then get the keywords and search for old questions
   ## else check if it is related to/ answering the recent question.
@@ -24,7 +28,31 @@ defmodule SphinxRtm.Messages do
         {:reply, "You asked for \"#{Parser.trim_mention(message.text)}\" but I have no answer!"}
 
       false ->
-        :no_reply
+        case Parser.mention_sphinx?(message.text) do
+          true ->
+            message
+            |> Map.put(:text, Parser.trim_mention(message.text))
+            |> process_question()
+
+            question = Parser.trim_mention(message.text)
+            url =
+              build_url("search.messages", %{
+                query: question,
+                channel: @channel,
+                pretty: 1
+              })
+
+            {:ok, _resp} =
+              url
+              |> HTTPoison.get()
+
+            # An ugly way to construct the reply but it will be changed in the future :)
+            {:reply,
+             "You asked for \"#{question}\" but I have no answer!"}
+
+          false ->
+            :no_reply
+        end
     end
   end
 
@@ -52,5 +80,17 @@ defmodule SphinxRtm.Messages do
   defp get_thread_permalink(channel_id, ts) do
     permalink(channel_id, ts)
     |> String.replace(~r/[?](.)*/, "")
+  end
+
+  defp build_url(path, params) do
+    url = "#{@slack_url}#{path}?token=#{@user_token}"
+
+    optional =
+      for {k, v} <- params do
+        "" <> "&#{k}=#{v}"
+      end
+
+    Enum.join([url] ++ optional, "")
+    |> URI.encode()
   end
 end

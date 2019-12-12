@@ -81,6 +81,22 @@ defmodule SphinxRtm.MessagesTest do
         [] = Repo.all(Riddle)
       end
     end
+
+    @tag :pending
+    test "capable to search if there is no answer for the question" do
+      with_mocks([
+        {Slack.Web.Users, [],
+         [
+           info: fn
+             "ABC" -> @user_a
+             "SPX" -> @sphinx
+           end
+         ]},
+        {Slack.Web.Chat, [], [get_permalink: fn "XYZ", "123.456" -> @question_permalink end]}
+      ]) do
+        assert {:reply, _response} = Messages.process(@question)
+      end
+    end
   end
 
   describe "incoming reply is" do

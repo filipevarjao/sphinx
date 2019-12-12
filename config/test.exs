@@ -1,6 +1,8 @@
 use Mix.Config
 
-config :slack, api_token: System.get_env("OAUTH_ACCESS_TOKEN")
+config :slack,
+  api_token: System.get_env("OAUTH_ACCESS_TOKEN"),
+  user_token: System.get_env("USER_OAUTH_ACCESS_TOKEN")
 
 config :sphinx, ecto_repos: [Sphinx.Repo]
 
