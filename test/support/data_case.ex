@@ -1,4 +1,4 @@
-defmodule Sphinx.DataCase do
+defmodule Sphinx.Support.DataCase do
   @moduledoc """
   Module for using when want to test with database
   """
