@@ -16,9 +16,9 @@ defmodule SphinxRtmTest do
     test "sending message to slack channel", %{pid: pid} do
       assert Process.alive?(pid) == true
 
-      send(pid, {:message, "External message", "#smart-bot"})
+      send(pid, {:message, "External message", "CR1LTP79B"})
 
-      assert capture_log(fn -> Process.sleep(200) end) =~
+      assert capture_log(fn -> Process.sleep(500) end) =~
                "Sending the message to"
     end
 

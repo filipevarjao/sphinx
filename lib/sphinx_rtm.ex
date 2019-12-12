@@ -4,6 +4,7 @@ defmodule SphinxRtm do
   require Logger
 
   alias SphinxRtm.Messages
+  alias Sphinx.SlackUtils
 
   def handle_connect(slack, state) do
     Logger.info("Connected as #{slack.me.name}")
@@ -16,7 +17,8 @@ defmodule SphinxRtm do
   end
 
   def handle_event(message = %{type: "message"}, slack, state) do
-    Logger.info("Processing message from #{message.user}")
+    user = SlackUtils.get_user_name(message.user)
+    Logger.info("Processing message from #{user}")
     case Messages.process(message) do
       {:reply, text} ->
         send_message(text, message.channel, slack)
