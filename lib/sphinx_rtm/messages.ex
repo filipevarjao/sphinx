@@ -16,11 +16,15 @@ defmodule SphinxRtm.Messages do
         :no_reply
 
       false ->
-        # TODO: check if @sphinx is invoked
         case Parser.mention_sphinx?(message.text) do
           true ->
-            process_question(message)
-            {:reply, "Are you asking for me?"}
+            message
+            |> Map.put(:text, Parser.trim_mention(message.text))
+            |> process_question()
+
+            # An ugly way to construct the reply but it will be changed in the future :)
+            {:reply,
+             "You asked for \"#{Parser.trim_mention(message.text)}\" but I have no answer!"}
 
           false ->
             :no_reply
