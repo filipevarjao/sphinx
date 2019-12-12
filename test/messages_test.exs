@@ -41,19 +41,19 @@ defmodule SphinxRtm.MessagesTest do
         [riddle] = Repo.all(Riddle)
         assert riddle.enquirer == get_user(@user_a)
         assert riddle.permalink == get_permalink(@question_permalink)
-        assert riddle.title == @question.text
+        assert riddle.title == trim_mention(@question.text)
       end
     end
 
     test "dicarded when sphinx is not mentioned" do
       question = Map.put(@question, :text, "Hello")
 
-      with_mock(Slack.Web.Users,[
-            info: fn
-            "ABC" -> @user_a
-             "SPX" -> @sphinx
-          end
-          ]) do
+      with_mock(Slack.Web.Users,
+        info: fn
+          "ABC" -> @user_a
+          "SPX" -> @sphinx
+        end
+      ) do
         assert :no_reply = Messages.process(question)
 
         [] = Repo.all(Riddle)
@@ -63,13 +63,13 @@ defmodule SphinxRtm.MessagesTest do
     test "dicarded when someone else than sphinx mentioned" do
       question = Map.put(@question, :text, "<@DEF> Hello")
 
-      with_mock(Slack.Web.Users, [
-            info: fn
-            "ABC" -> @user_a
-            "DEF" -> @user_b
-            "SPX" -> @sphinx
-          end
-          ]) do
+      with_mock(Slack.Web.Users,
+        info: fn
+          "ABC" -> @user_a
+          "DEF" -> @user_b
+          "SPX" -> @sphinx
+        end
+      ) do
         assert :no_reply = Messages.process(question)
 
         [] = Repo.all(Riddle)
@@ -83,17 +83,17 @@ defmodule SphinxRtm.MessagesTest do
         {Slack.Web.Users, [],
          [
            info: fn
-           "ABC" -> @user_a
-           "DEF" -> @user_b
-           "SPX" -> @sphinx
-         end
+             "ABC" -> @user_a
+             "DEF" -> @user_b
+             "SPX" -> @sphinx
+           end
          ]},
         {Slack.Web.Chat, [],
          [
            get_permalink: fn
-           "XYZ", "123.456" -> @question_permalink
-           "XYZ", "124.456" -> @answer_permalink
-         end
+             "XYZ", "123.456" -> @question_permalink
+             "XYZ", "124.456" -> @answer_permalink
+           end
          ]}
       ]) do
         assert {:reply, _} = Messages.process(@question)
@@ -105,34 +105,36 @@ defmodule SphinxRtm.MessagesTest do
         assert riddle.permalink_answer == get_permalink(@answer_permalink)
       end
     end
+
     test "not saved when thread is not saved" do
       question = Map.put(@question, :text, "Hello")
+
       with_mocks([
         {Slack.Web.Users, [],
          [
            info: fn
-           "ABC" -> @user_a
-           "DEF" -> @user_b
-           "SPX" -> @sphinx
-         end
+             "ABC" -> @user_a
+             "DEF" -> @user_b
+             "SPX" -> @sphinx
+           end
          ]},
         {Slack.Web.Chat, [],
          [
            get_permalink: fn
-           "XYZ", "123.456" -> @question_permalink
-           "XYZ", "124.456" -> @answer_permalink
-         end
+             "XYZ", "123.456" -> @question_permalink
+             "XYZ", "124.456" -> @answer_permalink
+           end
          ]}
       ]) do
         assert :no_reply = Messages.process(question)
         assert :no_reply = Messages.process(@answer)
 
         [] = Repo.all(Riddle)
-
       end
     end
   end
 
   defp get_user(user_map), do: get_in(user_map, ["user", "name"])
   defp get_permalink(permalink_map), do: Map.get(permalink_map, "permalink")
+  defp trim_mention(text), do:  String.replace(text, ~r/[<@](.)*[>]\s/, "")
 end
