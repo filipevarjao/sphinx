@@ -22,7 +22,7 @@ defmodule SphinxRtm do
 
     case Messages.process(message) do
       {:reply, text} ->
-        send_message(text, message.channel, slack)
+        send_thread_message(text, message, slack)
         {:ok, state}
 
       :no_reply ->
@@ -41,4 +41,15 @@ defmodule SphinxRtm do
   end
 
   def handle_info(_, _, state), do: {:ok, state}
+
+  def send_thread_message(reply, message, slack) do
+    %{
+      type: "message",
+      text: reply,
+      channel: message.channel,
+      thread_ts: message.ts
+    }
+    |> Poison.encode!()
+    |> send_raw(slack)
+  end
 end
