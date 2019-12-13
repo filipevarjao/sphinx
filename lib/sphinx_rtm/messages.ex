@@ -17,12 +17,11 @@ defmodule SphinxRtm.Messages do
   def process(message) do
     case Parser.mention_sphinx?(message.text) do
       true ->
-        reply =
-          message
-          |> Map.put(:text, Parser.trim_mention(message.text))
-          |> save_question()
+        message
+        |> Map.put(:text, Parser.trim_mention(message.text))
+        |> save_question()
 
-        {:reply, reply}
+        {:reply, "You asked for \"#{Parser.trim_mention(message.text)}\" but I have no answer!"}
 
       false ->
         :no_reply
