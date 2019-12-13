@@ -6,6 +6,7 @@ defmodule SphinxRtm.MessagesTest do
 
   alias SphinxRtm.Messages
   alias Sphinx.Repo
+  alias Sphinx.Riddles
   alias Sphinx.Riddles.Riddle
 
   @question %{type: "message", channel: "XYZ", ts: "123.456", user: "ABC", text: "<@SPX> Hello"}
@@ -22,7 +23,12 @@ defmodule SphinxRtm.MessagesTest do
   @sphinx %{"user" => %{"name" => "sphinx", "id" => "SPX"}}
 
   @question_permalink %{"permalink" => "https://fake_question_http"}
+  @question_thread_permalink %{
+    "permalink" => "https://fake_question_http?thread_ts=fake_question_http"
+  }
   @answer_permalink %{"permalink" => "https://fake_answer_http?thread_ts=fake_question_http"}
+
+  @thread_riddle %{enquirer: "user_a", title: "Hello", permalink: "https://fake_question_http"}
 
   describe "incoming question is" do
     test "replied and save message when sphinx is mentioned" do
@@ -79,6 +85,9 @@ defmodule SphinxRtm.MessagesTest do
 
   describe "incoming reply is" do
     test "saved when thread is saved" do
+      #Fake data of "asked question"
+      Riddles.create(@thread_riddle)
+
       with_mocks([
         {Slack.Web.Users, [],
          [
@@ -91,12 +100,11 @@ defmodule SphinxRtm.MessagesTest do
         {Slack.Web.Chat, [],
          [
            get_permalink: fn
-             "XYZ", "123.456" -> @question_permalink
+             "XYZ", "123.456" -> @question_thread_permalink
              "XYZ", "124.456" -> @answer_permalink
            end
          ]}
       ]) do
-        assert {:reply, _} = Messages.process(@question)
         assert :no_reply = Messages.process(@answer)
 
         [riddle] = Repo.all(Riddle)
@@ -107,8 +115,6 @@ defmodule SphinxRtm.MessagesTest do
     end
 
     test "not saved when thread is not saved" do
-      question = Map.put(@question, :text, "Hello")
-
       with_mocks([
         {Slack.Web.Users, [],
          [
@@ -121,12 +127,11 @@ defmodule SphinxRtm.MessagesTest do
         {Slack.Web.Chat, [],
          [
            get_permalink: fn
-             "XYZ", "123.456" -> @question_permalink
+             "XYZ", "123.456" -> @question_thread_permalink
              "XYZ", "124.456" -> @answer_permalink
            end
          ]}
       ]) do
-        assert :no_reply = Messages.process(question)
         assert :no_reply = Messages.process(@answer)
 
         [] = Repo.all(Riddle)
@@ -136,5 +141,5 @@ defmodule SphinxRtm.MessagesTest do
 
   defp get_user(user_map), do: get_in(user_map, ["user", "name"])
   defp get_permalink(permalink_map), do: Map.get(permalink_map, "permalink")
-  defp trim_mention(text), do:  String.replace(text, ~r/[<@](.)*[>]\s/, "")
+  defp trim_mention(text), do: String.replace(text, ~r/[<@](.)*[>]\s/, "")
 end

@@ -19,6 +19,7 @@ defmodule SphinxRtm do
   def handle_event(message = %{type: "message"}, slack, state) do
     user = SlackUtils.get_user_name(message.user)
     Logger.info("Processing message from #{user}")
+
     case Messages.process(message) do
       {:reply, text} ->
         send_message(text, message.channel, slack)
