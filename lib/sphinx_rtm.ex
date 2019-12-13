@@ -21,8 +21,8 @@ defmodule SphinxRtm do
     Logger.info("Processing message from #{user}")
 
     case Messages.process(message) do
-      {:reply, text} ->
-        send_message(text, message.channel, slack)
+      {:reply, reply} ->
+        send_thread_reply(reply, message, slack)
         {:ok, state}
 
       :no_reply ->
@@ -41,4 +41,15 @@ defmodule SphinxRtm do
   end
 
   def handle_info(_, _, state), do: {:ok, state}
+
+  def send_thread_reply(reply, received_message, slack) do
+    %{
+      type: "message",
+      text: reply,
+      channel: received_message.channel,
+      thread_ts: received_message.ts
+    }
+    |> Poison.encode!()
+    |> send_raw(slack)
+  end
 end
