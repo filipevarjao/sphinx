@@ -85,7 +85,7 @@ defmodule SphinxRtm.MessagesTest do
 
   describe "incoming reply is" do
     test "saved when thread is saved" do
-      #Fake data of "asked question"
+      # Fake data of "asked question"
       Riddles.create(@thread_riddle)
 
       with_mocks([
