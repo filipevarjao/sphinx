@@ -1,7 +1,8 @@
 defmodule SphinxRtm.Messages do
-  alias Sphinx.SlackUtils
-  alias Sphinx.Riddles
   alias SphinxRtm.Messages.Parser
+  alias Sphinx.Riddles
+  alias Sphinx.SlackUtils
+  alias Sphinx.SlackArgs
 
   @user_token Application.get_env(:slack, :user_token)
   @slack_url "https://slack.com/api/"
@@ -25,34 +26,16 @@ defmodule SphinxRtm.Messages do
         |> Map.put(:text, Parser.trim_mention(message.text))
         |> save_question()
 
-        {:reply, "You asked for \"#{Parser.trim_mention(message.text)}\" but I have no answer!"}
+        question = Parser.trim_mention(message.text)
+
+        params = SlackArgs.search_args(%{query: question, channel: @channel})
+        url = build_url("search.messages", params)
+        {:ok, response} = HTTPoison.get(url)
+        _reply_body = Poison.decode(response.body)
+        {:reply, "You asked for \"#{question}\" but I have no answer!"}
 
       false ->
-        case Parser.mention_sphinx?(message.text) do
-          true ->
-            message
-            |> Map.put(:text, Parser.trim_mention(message.text))
-            |> process_question()
-
-            question = Parser.trim_mention(message.text)
-            url =
-              build_url("search.messages", %{
-                query: question,
-                channel: @channel,
-                pretty: 1
-              })
-
-            {:ok, _resp} =
-              url
-              |> HTTPoison.get()
-
-            # An ugly way to construct the reply but it will be changed in the future :)
-            {:reply,
-             "You asked for \"#{question}\" but I have no answer!"}
-
-          false ->
-            :no_reply
-        end
+        :no_reply
     end
   end
 

@@ -94,7 +94,8 @@ defmodule SphinxRtm.MessagesTest do
          ]},
         {Slack.Web.Chat, [], [get_permalink: fn "XYZ", "123.456" -> @question_permalink end]}
       ]) do
-        assert {:reply, _response} = Messages.process(@question)
+        question = %{@question | text: "<@SPX> External message"}
+        assert {:reply, _response} = Messages.process(question)
       end
     end
   end
