@@ -9,31 +9,28 @@ defmodule SphinxRtm.Messages do
   ## If yes, save the answer
   ## Else discard (something like that?)
   @spec process(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
+  def process(message = %{thread_ts: _ts}) do
+    save_reply(message)
+    :no_reply
+  end
+
   def process(message) do
-    case Map.has_key?(message, :thread_ts) do
+    case Parser.mention_sphinx?(message.text) do
       true ->
-        process_reply(message)
-        :no_reply
+        reply =
+          message
+          |> Map.put(:text, Parser.trim_mention(message.text))
+          |> save_question()
+
+        {:reply, reply}
 
       false ->
-        case Parser.mention_sphinx?(message.text) do
-          true ->
-            message
-            |> Map.put(:text, Parser.trim_mention(message.text))
-            |> process_question()
-
-            # An ugly way to construct the reply but it will be changed in the future :)
-            {:reply,
-             "You asked for \"#{Parser.trim_mention(message.text)}\" but I have no answer!"}
-
-          false ->
-            :no_reply
-        end
+        :no_reply
     end
   end
 
-  @spec process_question(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
-  defp process_question(message) do
+  @spec save_question(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
+  defp save_question(message) do
     %{}
     |> Map.put(:enquirer, user(message.user))
     |> Map.put(:title, message.text)
@@ -41,15 +38,20 @@ defmodule SphinxRtm.Messages do
     |> Riddles.create()
   end
 
-  @spec process_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
-  defp process_reply(message) do
+  @spec save_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
+  defp save_reply(message) do
     %{}
     |> Map.put(:solver, user(message.user))
     |> Map.put(:permalink_answer, permalink(message.channel, message.ts))
-    |> Map.put(:permalink, permalink(message.channel, message.thread_ts))
+    |> Map.put(:permalink, get_thread_permalink(message.channel, message.thread_ts))
     |> Riddles.update()
   end
 
   defp user(user_id), do: SlackUtils.get_user_name(user_id)
   defp permalink(channel_id, ts), do: SlackUtils.get_permalink(channel_id, ts)
+
+  defp get_thread_permalink(channel_id, ts) do
+    permalink(channel_id, ts)
+    |> String.replace(~r/[?](.)*/, "")
+  end
 end
