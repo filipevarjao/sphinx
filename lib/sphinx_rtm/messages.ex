@@ -48,16 +48,17 @@ defmodule SphinxRtm.Messages do
     |> Riddles.create()
   end
 
-  @spec save_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
+  @spec save_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()} | :ok
   defp save_reply(message) do
-    question =
-      %{:permalink => get_thread_permalink(message.channel, message.thread_ts)}
-      |> Riddles.get()
-
-    %{}
-    |> Map.put(:solver, user(message.user))
-    |> Map.put(:permalink, permalink(message.channel, message.ts))
-    |> Answers.create(question)
+    params = %{:permalink => get_thread_permalink(message.channel, message.thread_ts)}
+    case Riddles.get(params) do
+      nil -> :ok #Ignore thread reply to not-saved messages
+      question ->
+        %{}
+        |> Map.put(:solver, user(message.user))
+        |> Map.put(:permalink, permalink(message.channel, message.ts))
+        |> Answers.create(question)
+    end
   end
 
   defp user(user_id), do: SlackUtils.get_user_name(user_id)

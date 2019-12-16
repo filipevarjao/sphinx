@@ -15,7 +15,7 @@ defmodule Sphinx.Riddles.Riddle do
     field(:permalink, :string)
     field(:keywords, {:array, :string})
     field(:enquirer, :string)
-    has_many(:answers, Sphinx.Riddles.Answer)
+    has_many(:answers, Sphinx.Answers.Answer)
 
     timestamps()
   end

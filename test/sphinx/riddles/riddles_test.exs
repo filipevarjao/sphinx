@@ -8,11 +8,8 @@ defmodule Sphinx.RiddlesTest do
   @params %{
     title: "title",
     permalink: "permalink",
-    permalink_answer: "answer",
     keywords: ["keyword", "key", "word"],
-    upvote: 1,
     enquirer: "A_USER",
-    solver: "B_USER"
   }
 
   describe "Riddles.create/1" do
@@ -23,9 +20,7 @@ defmodule Sphinx.RiddlesTest do
       assert riddle.title == @params.title
       assert riddle.permalink == @params.permalink
       assert riddle.keywords == @params.keywords
-      assert riddle.upvote == @params.upvote
       assert riddle.enquirer == @params.enquirer
-      assert riddle.solver == @params.solver
     end
 
     test "fails with wrong params" do
@@ -49,11 +44,8 @@ defmodule Sphinx.RiddlesTest do
       params = %{
         title: "title_II",
         permalink: "permalink_II",
-        permalink_answer: "answer_II",
         keywords: ["other", "another", "word"],
-        upvote: 5,
         enquirer: "A_USER",
-        solver: "B_USER_II"
       }
 
       {:ok, riddle1} = Riddles.create(@params)

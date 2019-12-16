@@ -1,4 +1,4 @@
-defmodule Sphinx.Riddles.Answer do
+defmodule Sphinx.Answers.Answer do
   @moduledoc """
     Riddle definition
   """

@@ -1,6 +1,6 @@
 defmodule Sphinx.Answers do
   alias Sphinx.Riddles.Riddle
-  alias Sphinx.Riddles.Answer
+  alias Sphinx.Answers.Answer
   alias Sphinx.Repo
 
   require Logger
@@ -20,24 +20,20 @@ defmodule Sphinx.Answers do
     |> Repo.all()
   end
 
-  @spec get(map(), Riddle.t()) :: Answer.t() | nil
-  def get(%{id: id} = params, riddle) when is_map(params) do
-    riddle
-    |> Ecto.assoc(:answers)
-    |> Repo.get_by(id: id)
+  @spec get(map()) :: Answer.t() | nil
+  def get(%{id: id} = params) when is_map(params) do
+    Repo.get_by(Answer, id: id)
   end
 
-  def get(%{permalink: permalink} = params, riddle) when is_map(params) do
-    riddle
-    |> Ecto.assoc(:answers)
-    |> Repo.get_by(permalink: permalink)
+  def get(%{permalink: permalink} = params) when is_map(params) do
+    Repo.get_by(Answer, permalink: permalink)
   end
 
   def get(_), do: nil
 
-  @spec delete(map(), Riddle.t()) :: {:ok, Answer.t()} | {:error, :not_found} | {:error, Ecto.Changeset.t()}
-  def delete(params, riddle) when is_map(params) do
-    case get(params, riddle) do
+  @spec delete(map()) :: {:ok, Answer.t()} | {:error, :not_found} | {:error, Ecto.Changeset.t()}
+  def delete(params) when is_map(params) do
+    case get(params) do
       nil ->
         {:error, :not_found}
 
@@ -46,9 +42,9 @@ defmodule Sphinx.Answers do
     end
   end
 
-  @spec update(map(), Riddle.t()) :: {:ok, Riddle.t()} | {:error, Ecto.Changeset.t()} | {:error, :not_found}
-  def update(params, riddle) when is_map(params) do
-    case get(params, riddle) do
+  @spec update(map()) :: {:ok, Riddle.t()} | {:error, Ecto.Changeset.t()} | {:error, :not_found}
+  def update(params) when is_map(params) do
+    case get(params) do
       nil ->
         {:error, :not_found}
 
