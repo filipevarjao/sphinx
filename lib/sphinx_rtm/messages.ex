@@ -1,7 +1,7 @@
 defmodule SphinxRtm.Messages do
-  alias Sphinx.SlackUtils
-  alias Sphinx.Riddles
   alias SphinxRtm.Messages.Parser
+  alias Sphinx.Riddles
+  alias Sphinx.SlackUtils
 
   ## TODO: check if message is a question
   ## if yes then get the keywords and search for old questions
@@ -21,7 +21,16 @@ defmodule SphinxRtm.Messages do
         |> Map.put(:text, Parser.trim_mention(message.text))
         |> save_question()
 
-        {:reply, "You asked for \"#{Parser.trim_mention(message.text)}\" but I have no answer!"}
+        text = Parser.trim_mention(message.text)
+
+        case SlackUtils.search(text, message.channel) do
+          nil ->
+            {:reply, "You asked for \"#{text}\" but I have no answer!"}
+
+          reply ->
+            {:reply,
+             "You asked for \"#{text}\" but I have no answer, but I found it: \n #{reply}"}
+        end
 
       false ->
         :no_reply

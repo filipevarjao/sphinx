@@ -43,7 +43,8 @@ defmodule Sphinx.MixProject do
       # Test
       {:excoveralls, "~> 0.9", only: :test},
       {:mock, "~> 0.3.0", only: :test},
-      {:poison, "~> 3.0"}
+      {:poison, "~> 3.0"},
+      {:httpoison, "~> 1.6"}
     ]
   end
 
