@@ -8,16 +8,14 @@ defmodule Sphinx.Riddles.Riddle do
 
   @timestamps_opts [type: :utc_datetime]
   @required [:permalink, :enquirer]
-  @fields [:title, :keywords, :permalink_answer, :upvote, :enquirer, :solver] ++ @required
+  @fields [:title, :keywords, :enquirer] ++ @required
 
   schema "riddles" do
     field(:title, :string)
     field(:permalink, :string)
     field(:keywords, {:array, :string})
-    field(:permalink_answer, :string)
-    field(:upvote, :integer)
     field(:enquirer, :string)
-    field(:solver, :string)
+    has_many(:answers, Sphinx.Riddles.Answer)
 
     timestamps()
   end

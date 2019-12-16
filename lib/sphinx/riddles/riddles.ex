@@ -24,9 +24,7 @@ defmodule Sphinx.Riddles do
       :title,
       :permalink,
       :keywords,
-      :upvote,
-      :enquirer,
-      :solver
+      :enquirer
     ])
     |> Repo.paginate(params)
   end
