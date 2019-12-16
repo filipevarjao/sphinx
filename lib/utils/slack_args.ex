@@ -23,27 +23,6 @@ defmodule Sphinx.SlackArgs do
     Map.merge(%{channel: channel, query: query}, optional)
   end
 
-  @spec history_args(map()) :: map()
-  def history_args(attrs \\ %{}) do
-    channel = Map.get(attrs, :channel)
-    count = Map.get(attrs, :count, 100)
-    inclusive = Map.get(attrs, :inclusive, 0)
-    latest = Map.get(attrs, :latest, "now")
-    oldest = Map.get(attrs, :oldest, 0)
-    unreads = Map.get(attrs, :unreads, 0)
-
-    optional =
-      clean_fields(%{
-        count: count,
-        inclusive: inclusive,
-        latest: latest,
-        oldest: oldest,
-        unreads: unreads
-      })
-
-    Map.merge(%{channel: channel}, optional)
-  end
-
   defp clean_fields(params) do
     params
     |> Enum.reject(fn {_k, v} -> v == nil end)
