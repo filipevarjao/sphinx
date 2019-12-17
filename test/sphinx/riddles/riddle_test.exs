@@ -7,7 +7,7 @@ defmodule Sphinx.Riddles.RiddleTest do
     title: "title",
     permalink: "permalink",
     keywords: ["keyword", "key", "word"],
-    enquirer: "A_USER",
+    enquirer: "A_USER"
   }
 
   describe "permalink field" do

@@ -9,7 +9,7 @@ defmodule Sphinx.RiddlesTest do
     title: "title",
     permalink: "permalink",
     keywords: ["keyword", "key", "word"],
-    enquirer: "A_USER",
+    enquirer: "A_USER"
   }
 
   describe "Riddles.create/1" do
@@ -74,7 +74,7 @@ defmodule Sphinx.RiddlesTest do
       assert riddle == Riddles.get(%{id: id, title: @params.title})
     end
 
-    test "return nil if riddle not exist" do
+    test "returns nil if riddle not exist" do
       assert [] == Repo.all(Riddle)
 
       refute Riddles.get(%{id: 1001, title: ""})
@@ -98,7 +98,7 @@ defmodule Sphinx.RiddlesTest do
   end
 
   describe "Riddles.update/1" do
-    test "update a riddle if is ok" do
+    test "updates a riddle if is ok" do
       {:ok, riddle} = Riddles.create(@params)
       assert riddle
 
@@ -111,7 +111,7 @@ defmodule Sphinx.RiddlesTest do
       assert updated.title == "title_II"
     end
 
-    test "updating a riddle by permalink" do
+    test "updates a riddle by permalink" do
       {:ok, riddle} = Riddles.create(@params)
       assert riddle
 
@@ -122,7 +122,7 @@ defmodule Sphinx.RiddlesTest do
       assert updated.title == "title_II"
     end
 
-    test "do not update with wrong params" do
+    test "does not update with wrong params" do
       {:ok, riddle} = Riddles.create(@params)
       assert riddle
 
@@ -137,7 +137,7 @@ defmodule Sphinx.RiddlesTest do
              ]
     end
 
-    test "do not update if do not exist" do
+    test "does not update if do not exist" do
       assert [] == Repo.all(Riddle)
       params = Map.put(@params, :id, 101)
       assert {:error, :not_found} = Riddles.update(params)
