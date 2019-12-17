@@ -1,5 +1,4 @@
 defmodule SphinxRtm.Messages do
-
   alias SphinxRtm.Messages.Parser
   alias Sphinx.Riddles
   alias Sphinx.SlackUtils
@@ -51,8 +50,12 @@ defmodule SphinxRtm.Messages do
   @spec save_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()} | :ok
   defp save_reply(message) do
     params = %{:permalink => get_thread_permalink(message.channel, message.thread_ts)}
+
     case Riddles.get(params) do
-      nil -> :ok #Ignore thread reply to not-saved messages
+      # Ignore thread reply to not-saved messages
+      nil ->
+        :ok
+
       question ->
         %{}
         |> Map.put(:solver, user(message.user))

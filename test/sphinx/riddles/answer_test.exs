@@ -1,5 +1,4 @@
 defmodule Sphinx.Riddles.AnswerTest do
-
   use ExUnit.Case
 
   alias Sphinx.Answers.Answer
@@ -16,6 +15,7 @@ defmodule Sphinx.Riddles.AnswerTest do
       refute changeset.valid?
       assert changeset.errors == [permalink: {"can't be blank", [validation: :required]}]
     end
+
     test "is an string" do
       changeset = Answer.changeset(%Answer{}, @params)
       assert changeset.valid?

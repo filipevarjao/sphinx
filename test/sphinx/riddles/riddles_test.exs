@@ -45,7 +45,7 @@ defmodule Sphinx.RiddlesTest do
         title: "title_II",
         permalink: "permalink_II",
         keywords: ["other", "another", "word"],
-        enquirer: "A_USER",
+        enquirer: "A_USER"
       }
 
       {:ok, riddle1} = Riddles.create(@params)

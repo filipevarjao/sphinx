@@ -121,5 +121,4 @@ defmodule Sphinx.AnswersTest do
       assert {:error, :not_found} = Answers.update(@answer_params)
     end
   end
-
 end
