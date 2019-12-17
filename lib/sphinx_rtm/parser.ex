@@ -20,4 +20,12 @@ defmodule SphinxRtm.Messages.Parser do
 
   @spec trim_mention(String.t()) :: String.t()
   def trim_mention(text), do: String.replace(text, ~r/[<@](.)*[>]\s/, "")
+
+  @spec asking_help?(String.t()) :: boolean()
+  def asking_help?(text) do
+    text
+    |> String.trim("@sphinx ")
+    |> String.downcase()
+    |> String.match?(~r/help/)
+  end
 end

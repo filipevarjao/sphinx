@@ -18,19 +18,21 @@ defmodule SphinxRtm.Messages do
   def process(message) do
     case Parser.mention_sphinx?(message.text) do
       true ->
-        message
-        |> Map.put(:text, Parser.trim_mention(message.text))
-        |> save_question()
+        case Parser.asking_help?(message.text) do
+          true ->
+            {:reply, help()}
 
-        text = Parser.trim_mention(message.text)
+          false ->
+            text = Parser.trim_mention(message.text)
 
-        case SlackUtils.search(text, message.channel) do
-          nil ->
-            {:reply, "You asked for \"#{text}\" but I have no answer!"}
+            case SlackUtils.search(text, message.channel) do
+              nil ->
+                {:reply, "You asked for \"#{text}\" but I have no answer!"}
 
-          reply ->
-            {:reply,
-             "You asked for \"#{text}\" but I have no answer, but I found it: \n #{reply}"}
+              reply ->
+                {:reply,
+                 "You asked for \"#{text}\" but I have no answer, but I found it: \n #{reply}"}
+            end
         end
 
       false ->
@@ -70,5 +72,15 @@ defmodule SphinxRtm.Messages do
   defp get_thread_permalink(channel_id, ts) do
     permalink(channel_id, ts)
     |> String.replace(~r/[?](.)*/, "")
+  end
+
+  defp help do
+    """
+    ```
+    @sphinx help Print Sphinx commands \n
+    @sphinx [TEXT] Starts a thread with SphinxBot \n
+    ...
+    ```
+    """
   end
 end
