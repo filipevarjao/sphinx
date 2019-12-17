@@ -1,7 +1,5 @@
 defmodule Sphinx.Answers.Answer do
-  @moduledoc """
-    Riddle definition
-  """
+
   use Ecto.Schema
 
   import Ecto.Changeset
