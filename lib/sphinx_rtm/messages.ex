@@ -2,6 +2,7 @@ defmodule SphinxRtm.Messages do
   alias SphinxRtm.Messages.Parser
   alias Sphinx.Riddles
   alias Sphinx.SlackUtils
+  alias Sphinx.Answers
 
   ## TODO: check if message is a question
   ## if yes then get the keywords and search for old questions
@@ -46,13 +47,21 @@ defmodule SphinxRtm.Messages do
     |> Riddles.create()
   end
 
-  @spec save_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()}
+  @spec save_reply(map()) :: {:ok, Riddles.Riddle.t()} | {:error, Ecto.Changeset.t()} | :ok
   defp save_reply(message) do
-    %{}
-    |> Map.put(:solver, user(message.user))
-    |> Map.put(:permalink_answer, permalink(message.channel, message.ts))
-    |> Map.put(:permalink, get_thread_permalink(message.channel, message.thread_ts))
-    |> Riddles.update()
+    params = %{:permalink => get_thread_permalink(message.channel, message.thread_ts)}
+
+    case Riddles.get(params) do
+      # Ignore thread reply to not-saved messages
+      nil ->
+        :ok
+
+      question ->
+        %{}
+        |> Map.put(:solver, user(message.user))
+        |> Map.put(:permalink, permalink(message.channel, message.ts))
+        |> Answers.create(question)
+    end
   end
 
   defp user(user_id), do: SlackUtils.get_user_name(user_id)

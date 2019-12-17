@@ -8,6 +8,7 @@ defmodule SphinxRtm.MessagesTest do
   alias Sphinx.Repo
   alias Sphinx.Riddles
   alias Sphinx.Riddles.Riddle
+  alias Sphinx.Answers
 
   @question %{type: "message", channel: "XYZ", ts: "123.456", user: "ABC", text: "<@SPX> Hello"}
   @answer %{
@@ -95,7 +96,9 @@ defmodule SphinxRtm.MessagesTest do
       ]) do
         question = %{@question | text: "<@SPX> 5eb63bbbe01eeed093cb22bb8f5acdc3"}
         assert {:reply, response} = Messages.process(question)
-        assert "You asked for \"5eb63bbbe01eeed093cb22bb8f5acdc3\" but I have no answer!" =~ response
+
+        assert "You asked for \"5eb63bbbe01eeed093cb22bb8f5acdc3\" but I have no answer!" =~
+                 response
       end
     end
   end
@@ -125,9 +128,10 @@ defmodule SphinxRtm.MessagesTest do
         assert :no_reply = Messages.process(@answer)
 
         [riddle] = Repo.all(Riddle)
+        [answer] = Answers.all(riddle)
         assert riddle.enquirer == get_user(@user_a)
-        assert riddle.solver == get_user(@user_b)
-        assert riddle.permalink_answer == get_permalink(@answer_permalink)
+        assert answer.solver == get_user(@user_b)
+        assert answer.permalink == get_permalink(@answer_permalink)
       end
     end
 
