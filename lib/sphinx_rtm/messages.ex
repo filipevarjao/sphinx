@@ -25,23 +25,24 @@ defmodule SphinxRtm.Messages do
             {:reply, help()}
 
           {:save, content} ->
-            reply =
-              message
-              |> Map.put(:text, content)
-              |> save_question()
+            message
+            |> Map.put(:text, content)
+            |> save_question()
 
-            {:reply, reply}
+            # It will change for {:reply, "You're question is saved"} by post_ephemeral
+            :no_reply
 
           {:search, content} ->
             content = if content == "", do: text, else: content
 
             case SlackUtils.search(content, message.channel) do
               nil ->
-                {:reply, "You asked for \"#{content}\" but I have no answer!"}
+                {:reply,
+                 "You asked for \"#{content}\" but I have no answer! Invoke @sphinx [SAVE] [TEXT] to save the question for future use!"}
 
               reply ->
                 {:reply,
-                 "You asked for \"#{content}\" but I have no answer, but I found it: \n #{reply}"}
+                 "You asked for \"#{content}\", you might find these helpful: \n #{reply}"}
             end
         end
 

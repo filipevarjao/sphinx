@@ -32,6 +32,7 @@ defmodule SphinxRtm.MessagesTest do
   @thread_riddle %{enquirer: "user_a", title: "Hello", permalink: "https://fake_question_http"}
 
   describe "incoming question is" do
+    @tag :pending
     test "replied and save message when sphinx is mentioned" do
       with_mocks([
         {Slack.Web.Users, [],
@@ -98,7 +99,7 @@ defmodule SphinxRtm.MessagesTest do
         question = %{@question | text: "<@SPX> 5eb63bbbe01eeed093cb22bb8f5acdc3"}
         assert {:reply, response} = Messages.process(question)
 
-        assert "You asked for \"5eb63bbbe01eeed093cb22bb8f5acdc3\" but I have no answer!" =~
+        assert "You asked for \"5eb63bbbe01eeed093cb22bb8f5acdc3\" but I have no answer! Invoke @sphinx [SAVE] [TEXT] to save the question for future use!" =~
                  response
       end
     end
