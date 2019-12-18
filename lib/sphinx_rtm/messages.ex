@@ -18,20 +18,30 @@ defmodule SphinxRtm.Messages do
   def process(message) do
     case Parser.mention_sphinx?(message.text) do
       true ->
-        case Parser.asking_help?(message.text) do
-          true ->
+        text = Parser.trim_mention(message.text)
+
+        case Parser.check_content(text) do
+          {:help, _} ->
             {:reply, help()}
 
-          false ->
-            text = Parser.trim_mention(message.text)
+          {:save, content} ->
+            reply =
+              message
+              |> Map.put(:text, content)
+              |> save_question()
 
-            case SlackUtils.search(text, message.channel) do
+            {:reply, reply}
+
+          {:search, content} ->
+            content = if content == "", do: text, else: content
+
+            case SlackUtils.search(content, message.channel) do
               nil ->
-                {:reply, "You asked for \"#{text}\" but I have no answer!"}
+                {:reply, "You asked for \"#{content}\" but I have no answer!"}
 
               reply ->
                 {:reply,
-                 "You asked for \"#{text}\" but I have no answer, but I found it: \n #{reply}"}
+                 "You asked for \"#{content}\" but I have no answer, but I found it: \n #{reply}"}
             end
         end
 
@@ -79,6 +89,7 @@ defmodule SphinxRtm.Messages do
     ```
     @sphinx help Print Sphinx commands \n
     @sphinx [TEXT] Starts a thread with SphinxBot \n
+    @sphinx [SAVE] [TEXT] It saves the link to the thread without title \n
     ...
     ```
     """

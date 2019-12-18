@@ -43,12 +43,13 @@ defmodule SphinxRtm.MessagesTest do
          ]},
         {Slack.Web.Chat, [], [get_permalink: fn "XYZ", "123.456" -> @question_permalink end]}
       ]) do
-        assert {:reply, _text} = Messages.process(@question)
+        question = %{@question | text: "<@SPX> save: Hello"}
+        assert {:reply, _text} = Messages.process(question)
 
         [riddle] = Repo.all(Riddle)
         assert riddle.enquirer == get_user(@user_a)
         assert riddle.permalink == get_permalink(@question_permalink)
-        assert riddle.title == trim_mention(@question.text)
+        assert riddle.title == trim_mention("Hello")
       end
     end
 
