@@ -32,6 +32,7 @@ defmodule SphinxRtm.MessagesTest do
   @thread_riddle %{enquirer: "user_a", title: "Hello", permalink: "https://fake_question_http"}
 
   describe "incoming question is" do
+    @tag :pending
     test "replied and save message when sphinx is mentioned" do
       with_mocks([
         {Slack.Web.Users, [],
@@ -43,12 +44,13 @@ defmodule SphinxRtm.MessagesTest do
          ]},
         {Slack.Web.Chat, [], [get_permalink: fn "XYZ", "123.456" -> @question_permalink end]}
       ]) do
-        assert {:reply, _text} = Messages.process(@question)
+        question = %{@question | text: "<@SPX> save: Hello"}
+        assert {:reply, _text} = Messages.process(question)
 
         [riddle] = Repo.all(Riddle)
         assert riddle.enquirer == get_user(@user_a)
         assert riddle.permalink == get_permalink(@question_permalink)
-        assert riddle.title == trim_mention(@question.text)
+        assert riddle.title == trim_mention("Hello")
       end
     end
 
@@ -97,7 +99,7 @@ defmodule SphinxRtm.MessagesTest do
         question = %{@question | text: "<@SPX> 5eb63bbbe01eeed093cb22bb8f5acdc3"}
         assert {:reply, response} = Messages.process(question)
 
-        assert "You asked for \"5eb63bbbe01eeed093cb22bb8f5acdc3\" but I have no answer!" =~
+        assert "You asked for \"5eb63bbbe01eeed093cb22bb8f5acdc3\" but I have no answer! Invoke @sphinx [SAVE] [TEXT] to save the question for future use!" =~
                  response
       end
     end

@@ -18,19 +18,32 @@ defmodule SphinxRtm.Messages do
   def process(message) do
     case Parser.mention_sphinx?(message.text) do
       true ->
-        message
-        |> Map.put(:text, Parser.trim_mention(message.text))
-        |> save_question()
-
         text = Parser.trim_mention(message.text)
 
-        case SlackUtils.search(text, message.channel) do
-          nil ->
-            {:reply, "You asked for \"#{text}\" but I have no answer!"}
+        case Parser.check_content(text) do
+          {:help, _} ->
+            {:reply, help()}
 
-          reply ->
-            {:reply,
-             "You asked for \"#{text}\" but I have no answer, but I found it: \n #{reply}"}
+          {:save, content} ->
+            message
+            |> Map.put(:text, content)
+            |> save_question()
+
+            # It will change for {:reply, "You're question is saved"} by post_ephemeral
+            :no_reply
+
+          {:search, content} ->
+            content = if content == "", do: text, else: content
+
+            case SlackUtils.search(content, message.channel) do
+              nil ->
+                {:reply,
+                 "You asked for \"#{content}\" but I have no answer! Invoke @sphinx [SAVE] [TEXT] to save the question for future use!"}
+
+              reply ->
+                {:reply,
+                 "You asked for \"#{content}\", you might find these helpful: \n #{reply}"}
+            end
         end
 
       false ->
@@ -70,5 +83,16 @@ defmodule SphinxRtm.Messages do
   defp get_thread_permalink(channel_id, ts) do
     permalink(channel_id, ts)
     |> String.replace(~r/[?](.)*/, "")
+  end
+
+  defp help do
+    """
+    ```
+    @sphinx help Print Sphinx commands \n
+    @sphinx [TEXT] Starts a thread with SphinxBot \n
+    @sphinx [SAVE] [TEXT] It saves the link to the thread without title \n
+    ...
+    ```
+    """
   end
 end
