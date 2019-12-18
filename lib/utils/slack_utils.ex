@@ -1,5 +1,6 @@
 defmodule Sphinx.SlackUtils do
   use Slack
+  alias Slack.Web.Channels
   alias Slack.Web.Chat
   alias Slack.Web.Users
   alias Slack.Web.Reactions
@@ -7,6 +8,12 @@ defmodule Sphinx.SlackUtils do
 
   @user_token Application.get_env(:slack, :user_token)
   @slack_url Application.get_env(:slack, :slack_url)
+
+  @spec get_channel_name(String.t()) :: String.t()
+  def get_channel_name(channel_id) do
+    Channels.info(channel_id)
+    |> get_in(["channel", "name"])
+  end
 
   @spec get_permalink(String.t(), String.t()) :: String.t()
   def get_permalink(channel_id, ts) do
