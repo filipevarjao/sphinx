@@ -25,7 +25,7 @@ defmodule Sphinx.SlackArgs do
         pretty: pretty
       })
 
-    Map.merge(optional, %{query: query})
+    Map.merge(%{query: query}, optional)
   end
 
   defp clean_fields(params) do
