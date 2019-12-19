@@ -36,7 +36,7 @@ defmodule Sphinx.SlackUtils do
 
   defp build_response(matches, text, channel) do
     blocks =
-      Enum.filter(matches, &match?(%{"channel" => %{"id" => channel}, "text" => text}, &1))
+      Enum.filter(matches, &match?(%{"channel" => %{"id" => ^channel}, "text" => text}, &1))
       |> Enum.sort_by(&get_upvote_count(&1), &>=/2)
 
     build_text("", 1, blocks)
