@@ -55,7 +55,9 @@ defmodule SphinxRtm.Messages do
     permalink = permalink(message.item.channel, message.item.ts)
 
     case Answers.get(%{permalink: permalink}) do
-      nil -> :ok
+      nil ->
+        :ok
+
       answer ->
         upvote = answer.upvote
         Answers.update(%{permalink: permalink, upvote: upvote + 1})
